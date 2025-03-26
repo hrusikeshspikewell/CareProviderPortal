@@ -3,10 +3,6 @@ using CareProviderPortal.dto;
 using CareProviderPortal.Models;
 using CareProviderPortal.Repository;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace CareProviderPortal.Services
 {

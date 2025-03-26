@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using CareProviderPortal.Models;
 using CareProviderPortal.Repository;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 public class Repository<T> : IRepository<T> where T : class
 {
