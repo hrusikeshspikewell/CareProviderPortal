@@ -7,9 +7,9 @@ namespace CareProviderPortal.Services
 {
     public class AchievementService : IAchievementService
     {
-        private readonly IRepository<Achievement> _repository;
+        private readonly IAchievementRepository _repository;
         private readonly IMapper _mapper;
-        public AchievementService(IRepository<Achievement> repository, IMapper mapper) 
+        public AchievementService(IAchievementRepository repository, IMapper mapper) 
         { 
             _repository = repository; 
             _mapper = mapper; 

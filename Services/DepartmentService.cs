@@ -7,10 +7,10 @@ namespace CareProviderPortal.Services
 {
     public class DepartmentService : IDepartmentService
     {
-        private readonly IRepository<Department> _repository;
+        private readonly IDepartmentRepository _repository;
         private readonly IMapper _mapper;
 
-        public DepartmentService(IRepository<Department> repository, IMapper mapper)
+        public DepartmentService(IDepartmentRepository repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;

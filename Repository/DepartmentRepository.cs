@@ -1,44 +1,55 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using CareProviderPortal.Models;
-using CareProviderPortal.Repository;
 
-public class Repository<T> : IRepository<T> where T : class
+namespace CareProviderPortal.Repository
 {
-    private readonly CareProviderPortalContext _context;
-    private readonly DbSet<T> _dbSet;
-
-    public Repository(CareProviderPortalContext context)
+    public class DepartmentRepository : IDepartmentRepository
     {
-        _context = context;
-        _dbSet = _context.Set<T>();
-    }
+        private readonly CareProviderPortalContext _context;
 
-    public async Task<IEnumerable<T>> GetAll() => await _dbSet.ToListAsync();
-
-    public async Task<T> GetById(int id) => await _dbSet.FindAsync(id);
-
-    public async Task<T> Add(T entity)
-    {
-        await _dbSet.AddAsync(entity);
-        await _context.SaveChangesAsync();
-
-        await _context.Entry(entity).ReloadAsync();
-        return entity;
-    }
-
-    public async Task Update(T entity)
-    {
-        _dbSet.Update(entity);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task Delete(int id)
-    {
-        var entity = await GetById(id);
-        if (entity != null)
+        public DepartmentRepository(CareProviderPortalContext context)
         {
-            _dbSet.Remove(entity);
+            _context = context;
+        }
+
+        public async Task<IEnumerable<Department>> GetAll()
+        {
+            return await _context.Departments.ToListAsync();
+        }
+
+        public async Task<Department> GetById(int id)
+        {
+            return await _context.Departments.FindAsync(id);
+        }
+
+        public async Task<Department> Add(Department department)
+        {
+            await _context.Departments.AddAsync(department);
             await _context.SaveChangesAsync();
+            return department;
+        }
+
+        public async Task Update(Department department)
+        {
+            _context.Departments.Update(department);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task Delete(int id)
+        {
+            var department = await _context.Departments.FindAsync(id);
+            if (department != null)
+            {
+                _context.Departments.Remove(department);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<Department> GetDepartmentWithCareProviders(int departmentId)
+        {
+            return await _context.Departments
+                .Include(d => d.CareProviders)
+                .FirstOrDefaultAsync(d => d.Id == departmentId);
         }
     }
 }
