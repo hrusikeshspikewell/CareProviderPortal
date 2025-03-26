@@ -19,11 +19,14 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Register Generic Repository (Used for all entities)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IExperienceRepository, ExperienceRepository>();
 
 // Service Registrations
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<ICareProviderService, CareProviderService>();
+builder.Services.AddScoped<IExperienceService, ExperienceService>();
+
 
 var app = builder.Build();
 

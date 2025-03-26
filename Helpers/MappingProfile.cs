@@ -13,9 +13,11 @@ public class MappingProfile : Profile
         CreateMap<CareProviderCreateDTO, CareProvider>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
 
-        // Other mappings for Department and Achievement remain as needed...
+        // Map DepartmentCreateDTO to Department
+        CreateMap<DepartmentCreateDTO, Department>();
+
+        // Map Department to DepartmentReadDTO (if needed)
         CreateMap<Department, DepartmentDTO>();
-        CreateMap<DepartmentDTO, Department>().ForMember(dest => dest.Id, opt => opt.Ignore());
 
         // For GET responses (include Id)
         CreateMap<Experience, ExperienceDTO>();

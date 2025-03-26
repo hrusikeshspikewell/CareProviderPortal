@@ -3,6 +3,10 @@ using CareProviderPortal.dto;
 using CareProviderPortal.Models;
 using CareProviderPortal.Repository;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace CareProviderPortal.Services
 {
@@ -19,8 +23,27 @@ namespace CareProviderPortal.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<CareProviderDTO>> GetAllProviders() => _mapper.Map<IEnumerable<CareProviderDTO>>(await _repository.GetAll());
+        // Use _context with Include to ensure Experiences and Achievements are loaded
+        public async Task<IEnumerable<CareProviderDTO>> GetAllProviders()
+        {
+            var providers = await _context.CareProviders
+                .Include(p => p.Experiences)
+                .Include(p => p.Achievements)
+                .ToListAsync();
 
+            var dtos = _mapper.Map<IEnumerable<CareProviderDTO>>(providers);
+            foreach (var dto in dtos)
+            {
+                var provider = providers.FirstOrDefault(p => p.Id == dto.Id);
+                if (provider != null)
+                {
+                    dto.TotalExperienceYears = CalculateTotalExperience(provider.Experiences);
+                }
+            }
+            return dtos;
+        }
+
+        // Use _context with Include for detailed data
         public async Task<CareProviderDTO> GetProviderById(int id)
         {
             var provider = await _context.CareProviders
@@ -28,14 +51,22 @@ namespace CareProviderPortal.Services
                 .Include(p => p.Achievements)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            return _mapper.Map<CareProviderDTO>(provider);
+            var dto = _mapper.Map<CareProviderDTO>(provider);
+            if (provider != null)
+            {
+                dto.TotalExperienceYears = CalculateTotalExperience(provider.Experiences);
+            }
+            return dto;
         }
 
         public async Task<CareProviderDTO> AddProvider(CareProviderCreateDTO careProviderDTO)
         {
             var careProvider = _mapper.Map<CareProvider>(careProviderDTO);
             var createdProvider = await _repository.Add(careProvider);
-            return _mapper.Map<CareProviderDTO>(createdProvider);
+            // Reload experiences if needed using _context, or assume none exist on creation.
+            var dto = _mapper.Map<CareProviderDTO>(createdProvider);
+            dto.TotalExperienceYears = CalculateTotalExperience(createdProvider.Experiences);
+            return dto;
         }
 
         public async Task UpdateProvider(int id, CareProviderCreateDTO careProviderDTO)
@@ -65,7 +96,6 @@ namespace CareProviderPortal.Services
             }
         }
 
-        // New method: Get providers by department
         public async Task<IEnumerable<CareProviderDTO>> GetProvidersByDepartment(int departmentId)
         {
             var providers = await _context.CareProviders
@@ -74,7 +104,16 @@ namespace CareProviderPortal.Services
                 .Include(p => p.Achievements)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<CareProviderDTO>>(providers);
+            var dtos = _mapper.Map<IEnumerable<CareProviderDTO>>(providers);
+            foreach (var dto in dtos)
+            {
+                var provider = providers.FirstOrDefault(p => p.Id == dto.Id);
+                if (provider != null)
+                {
+                    dto.TotalExperienceYears = CalculateTotalExperience(provider.Experiences);
+                }
+            }
+            return dtos;
         }
 
         public async Task<IEnumerable<CareProviderDTO>> GetProvidersByExperience(int years)
@@ -85,14 +124,30 @@ namespace CareProviderPortal.Services
                 .ToListAsync();
 
             var filteredProviders = providers.Where(p =>
-                p.Experiences.Any(e =>
-                {
-                    var start = e.StartDate.ToDateTime(new TimeOnly(0, 0));
-                    var end = e.EndDate.HasValue ? e.EndDate.Value.ToDateTime(new TimeOnly(0, 0)) : DateTime.Now;
-                    return (end - start).TotalDays / 365 >= years;
-                }));
+                CalculateTotalExperience(p.Experiences) >= years);
 
-            return _mapper.Map<IEnumerable<CareProviderDTO>>(filteredProviders);
+            var dtos = _mapper.Map<IEnumerable<CareProviderDTO>>(filteredProviders);
+            foreach (var dto in dtos)
+            {
+                var provider = filteredProviders.FirstOrDefault(p => p.Id == dto.Id);
+                if (provider != null)
+                {
+                    dto.TotalExperienceYears = CalculateTotalExperience(provider.Experiences);
+                }
+            }
+            return dtos;
+        }
+
+        // Helper method: Sums the total days across all experiences and converts to years.
+        private int CalculateTotalExperience(ICollection<Experience> experiences)
+        {
+            double totalDays = experiences.Sum(exp =>
+            {
+                var start = exp.StartDate;  // Assuming StartDate is DateTime
+                var end = exp.EndDate.HasValue ? exp.EndDate.Value : DateTime.Now;
+                return (end - start).TotalDays;
+            });
+            return (int)Math.Floor(totalDays / 365.25);
         }
     }
 }

@@ -9,7 +9,7 @@
         public string Specialization { get; set; } = null!;
         public int DepartmentId { get; set; }
         public string Status { get; set; } = null!;
-        public List<ExperienceDTO> Experiences { get; set; } = new List<ExperienceDTO>();
+        public int TotalExperienceYears { get; set; }
         public List<AchievementDTO> Achievements { get; set; } = new List<AchievementDTO>();
     }
 }

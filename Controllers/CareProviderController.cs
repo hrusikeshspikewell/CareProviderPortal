@@ -45,7 +45,7 @@ namespace CareProviderPortal.Controllers
             return Ok();
         }
         
-        [HttpGet("by-department/{departmentId}")]
+        [HttpGet("department/{departmentId}")]
         public async Task<IActionResult> GetByDepartment(int departmentId)
         {
             var providers = await _service.GetProvidersByDepartment(departmentId);
@@ -53,7 +53,7 @@ namespace CareProviderPortal.Controllers
         }
 
         // New API: Get providers by experience
-        [HttpGet("by-experience/{years}")]
+        [HttpGet("experience/{years}")]
         public async Task<IActionResult> GetByExperience(int years)
         {
             var providers = await _service.GetProvidersByExperience(years);
