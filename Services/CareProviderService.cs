@@ -19,7 +19,6 @@ namespace CareProviderPortal.Services
             _context = context;
         }
 
-        // Use _context with Include to ensure Experiences and Achievements are loaded
         public async Task<IEnumerable<CareProviderDTO>> GetAllProviders()
         {
             var providers = await _context.CareProviders
@@ -39,7 +38,6 @@ namespace CareProviderPortal.Services
             return dtos;
         }
 
-        // Use _context with Include for detailed data
         public async Task<CareProviderDTO> GetProviderById(int id)
         {
             var provider = await _context.CareProviders
@@ -59,7 +57,7 @@ namespace CareProviderPortal.Services
         {
             var careProvider = _mapper.Map<CareProvider>(careProviderDTO);
             var createdProvider = await _repository.Add(careProvider);
-            // Reload experiences if needed using _context, or assume none exist on creation.
+            
             var dto = _mapper.Map<CareProviderDTO>(createdProvider);
             dto.TotalExperienceYears = CalculateTotalExperience(createdProvider.Experiences);
             return dto;
@@ -84,12 +82,7 @@ namespace CareProviderPortal.Services
 
         public async Task DeleteProvider(int id)
         {
-            var provider = await _repository.GetById(id);
-            if (provider != null)
-            {
-                provider.Status = "LEFT";
-                await _repository.Update(provider);
-            }
+            await _repository.Delete(id);
         }
 
         public async Task<IEnumerable<CareProviderDTO>> GetProvidersByDepartment(int departmentId)
@@ -139,7 +132,7 @@ namespace CareProviderPortal.Services
         {
             double totalDays = experiences.Sum(exp =>
             {
-                var start = exp.StartDate;  // Assuming StartDate is DateTime
+                var start = exp.StartDate;
                 var end = exp.EndDate.HasValue ? exp.EndDate.Value : DateTime.Now;
                 return (end - start).TotalDays;
             });
