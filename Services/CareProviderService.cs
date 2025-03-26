@@ -39,13 +39,13 @@ namespace CareProviderPortal.Services
         public async Task UpdateProvider(int id, CareProviderCreateDTO careProviderDTO)
         {
             var existingProvider = await _repository.GetById(id);
-            if (existingProvider == null)
+            if (existingProvider != null)
             {
-                throw new System.Exception("Provider not found.");
+                _mapper.Map(careProviderDTO, existingProvider);
+                await _repository.Update(existingProvider);
             }
 
-            _mapper.Map(careProviderDTO, existingProvider);
-            await _repository.Update(existingProvider);
+            
         }
 
         public async Task DeleteProvider(int id)
